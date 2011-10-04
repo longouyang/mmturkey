@@ -25,7 +25,7 @@ var turk = {};
 
 		var assignmentId = turk.assignmentId,
 		    turkSubmitTo = turk.turkSubmitTo,
-		    filteredData = {},
+		    filteredData = [],
 		    debugOutput = "<p><b>Debug mode</b></p>Here is the data that would have been submitted to Turk: <ul>",
 		    hopUndefined = !Object.prototype.hasOwnProperty,
 		    form = document.createElement('form');
@@ -33,25 +33,31 @@ var turk = {};
     document.body.appendChild(form);
 
     if (assignmentId) {
-      filteredData["assignmentId"] = assignmentId; 
+      filteredData.push({assignmentId: assignmentId}); 
     }
     
 		for(var key in data) {
 			if ((hopUndefined || data.hasOwnProperty(key)) && (typeof data[key] != "function") ) {
-			  var input = document.createElement('input');
-			  input.type = "hidden";
-			  input.name = key;
-			  input.value = data[key];
-			  form.appendChild(input);
-				debugOutput += "<li><b>"+key+"</b>: " + data[key] + "</li>" ;
+			  filteredData.push({key: key, value: data[key]})
 			}
+		}
+		
+		for(var i = 0, ii = filteredData.length; i < ii; i++ ) {
+		  var kv = filteredData[i],
+		      input = document.createElement('input');
+		      
+		  input.type = "hidden";
+		  input.name = kv.key;
+		  input.value = kv.value;
+		  form.appendChild(input);
+		  debugOutput += "<li><b>"+kv.key+"</b>: " + kv.value + "</li>" ;
 		}
 		
 		debugOutput += "</ul>";
 		
 		// If there's no turk info
 		if (!assignmentId || !turkSubmitTo) {
-		  // Emit the debug output and end
+		  // Emit the debug output and stop
 		  var div = document.createElement('div');
 		  div.style.font = "14px HelveticaNeue-Light";
 		  div.style.boxShadow = "2px 2px 2px grey";
