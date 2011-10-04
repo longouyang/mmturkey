@@ -1,10 +1,19 @@
 <html>
 <body>
 
+<div id="indicator">{{}}</div>
+
 <script src="mmturkey.js"></script>
 
 <script>
-turk.submit({a: 1, b: 2});
+var indicator = document.getElementById("indicator");
+if (!turk.previewMode) {
+	indicator.innerHTML = "submitting in 2 seconds...";
+	setTimeout(function() { turk.submit({a: 1, b: 2}) }, 2000);
+} else {
+	indicator.innerHTML = "preview mode";
+}
+
 </script>
 </body>
 </html>
