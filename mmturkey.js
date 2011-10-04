@@ -12,11 +12,9 @@ var turk = {};
   var src = param(window.location.href, "assignmentId") ? window.location.href : document.referrer;
 
   var keys = ["assignmentId","hitId","workerId","turkSubmitTo"];
-  keys.map(
-    function(key) {
-      turk[key] = unescape(param(src, key));
-    }
-  );
+  keys.map(function(key) {
+    turk[key] = unescape(param(src, key));
+  });
 
   turk.previewMode = (turk.assignmentId == "ASSIGNMENT_ID_NOT_AVAILABLE");
 
@@ -35,13 +33,14 @@ var turk = {};
       filteredData.push({key: "assignmentId", value: assignmentId}); 
     }
 
-    // Filter out 
+    // Filter out non-own properties and things that are functions
     for(var key in data) {
       if ((hopUndefined || data.hasOwnProperty(key)) && (typeof data[key] != "function") ) {
         filteredData.push({key: key, value: data[key]});
       }
     }
-  
+
+    // Create form variables and debug output
     for(var i = 0, ii = filteredData.length; i < ii; i++ ) {
       var kv = filteredData[i],
           input = document.createElement('input');
@@ -69,9 +68,9 @@ var turk = {};
       return;
     }
 
+    // Otherwise, submit the form
     form.action = turk.turkSubmitTo + "/mturk/externalSubmit";
     form.method = "POST";
-  
     form.submit();
   }
 })();
