@@ -63,7 +63,7 @@ var turk = {};
 		  return;
 	  }
 	  
-	  form.action = turk.turkSubmitTo;
+	  form.action = turk.turkSubmitTo + "/mturk/externalSubmit";
     form.method = "POST";
 		
 		form.submit();
