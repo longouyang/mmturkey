@@ -1,5 +1,23 @@
 var turk = {};
 
+var stringify = function(obj) { 
+  if (obj instanceof Array) {
+    return "[" + obj.map(stringify).join(",") + "]";
+  } else if (typeof obj == "object") {
+    var strs = [];
+    for(var key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        strs.push(stringify(key) + ": " + stringify(obj[key]));
+      }
+    }
+    return "{" + strs.join(",") + "}";
+  } else if (typeof obj == "string")  {
+    return '"' + obj + '"';
+  } else {
+    return obj.toString();
+  }
+};
+
 (function() {
   var param = function(url, name ) {
     name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
@@ -49,7 +67,7 @@ var turk = {};
       input.name = kv.key;
       input.value = kv.value;
       form.appendChild(input);
-      debugOutput += "<li><b>"+kv.key+"</b>: " + kv.value + "</li>" ;
+      debugOutput += "<li><b>"+kv.key+"</b>: " + stringify(kv.value) + "</li>" ;
     }
 
     debugOutput += "</ul>";
