@@ -50,7 +50,7 @@ var turk = {};
 		debugOutput += "</ul>";
 		
 		// If there's no turk info
-		if (!assignmentId || !submitTo) {
+		if (!assignmentId || !turkSubmitTo) {
 		  // Emit the debug output and end
 		  var div = document.createElement('div');
 		  div.style.font = "14px HelveticaNeue-Light";
