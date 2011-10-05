@@ -1,23 +1,5 @@
 var turk = {};
 
-var stringify = function(obj) { 
-  if (obj instanceof Array) {
-    return "[" + obj.map(stringify).join(",") + "]";
-  } else if (typeof obj == "object") {
-    var strs = [];
-    for(var key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        strs.push(stringify(key) + ": " + stringify(obj[key]));
-      }
-    }
-    return "{" + strs.join(",") + "}";
-  } else if (typeof obj == "string")  {
-    return '"' + obj + '"';
-  } else {
-    return obj.toString();
-  }
-};
-
 (function() {
   var param = function(url, name ) {
     name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
@@ -26,6 +8,24 @@ var stringify = function(obj) {
     var results = regex.exec( url );
     return ( results == null ) ? "" : results[1];
   }
+  
+  var stringify = function(obj) { 
+    if (obj instanceof Array) {
+      return "[" + obj.map(stringify).join(",") + "]";
+    } else if (typeof obj == "object") {
+      var strs = [];
+      for(var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          strs.push("<li>"+stringify(key) + ": " + stringify(obj[key])+"</li>");
+        }
+      }
+      return "{<ul>" + strs.join("") + "</ul>}";
+    } else if (typeof obj == "string")  {
+      return '"' + obj + '"';
+    } else {
+      return obj.toString();
+    }
+  };
 
   var src = param(window.location.href, "assignmentId") ? window.location.href : document.referrer;
 
@@ -40,45 +40,37 @@ var stringify = function(obj) {
   turk.submit = function(data) {
     var assignmentId = turk.assignmentId,
         turkSubmitTo = turk.turkSubmitTo,
-        filteredData = [],
-        debugOutput = "<p><b>Debug mode</b></p>Here is the data that would have been submitted to Turk: <ul>",
+        filteredData = {},
         hopUndefined = !Object.prototype.hasOwnProperty,
         form = document.createElement('form');
    
     document.body.appendChild(form);
 
     if (assignmentId) {
-      filteredData.push({key: "assignmentId", value: assignmentId}); 
+      filteredData["assignmentId"] = assignmentId
     }
 
     // Filter out non-own properties and things that are functions
     for(var key in data) {
       if ((hopUndefined || data.hasOwnProperty(key)) && (typeof data[key] != "function") ) {
-        filteredData.push({key: key, value: data[key]});
+        filteredData[key] = data[key];
+        var input = document.createElement('input');
+        input.type = "hidden";
+        input.name = key;
+        input.value = data[key];
+        form.appendChild(input);
       }
     }
 
-    // Create form variables and debug output
-    for(var i = 0, ii = filteredData.length; i < ii; i++ ) {
-      var kv = filteredData[i],
-          input = document.createElement('input');
-        
-      input.type = "hidden";
-      input.name = kv.key;
-      input.value = kv.value;
-      form.appendChild(input);
-      debugOutput += "<li><b>"+kv.key+"</b>: " + stringify(kv.value) + "</li>" ;
-    }
-
-    debugOutput += "</ul>";
+    var debugOutput = "<p><b>Debug mode</b></p>Here is the data that would have been submitted to Turk: <ul>" + stringify(filteredData) + "</ul>";
   
     // If there's no turk info
     if (!assignmentId || !turkSubmitTo) {
       // Emit the debug output and stop
       var div = document.createElement('div');
       div.style.font = "14px HelveticaNeue-Light";
+      div.style.float = "right";
       div.style.boxShadow = "2px 2px 2px grey";
-      div.style.position = "absolute";
       div.style.padding = "1em";
       div.style.backgroundColor = "#dfdfdf";
       div.innerHTML = debugOutput;
