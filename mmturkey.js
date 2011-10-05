@@ -70,7 +70,6 @@ var turk = {};
       var div = document.createElement('div');
       div.style.font = "14px HelveticaNeue-Light";
       div.style.float = "right";
-      div.style.boxShadow = "2px 2px 2px grey";
       div.style.padding = "1em";
       div.style.backgroundColor = "#dfdfdf";
       div.innerHTML = debugOutput;
