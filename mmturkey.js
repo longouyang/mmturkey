@@ -46,18 +46,24 @@ var turk = {};
    
     document.body.appendChild(form);
 
-    if (assignmentId) {
-      filteredData["assignmentId"] = assignmentId
+        if (assignmentId) {
+      filteredData["assignmentId"] = assignmentId;
     }
 
     // Filter out non-own properties and things that are functions
     for(var key in data) {
       if ((hopUndefined || data.hasOwnProperty(key)) && (typeof data[key] != "function") ) {
         filteredData[key] = data[key];
+      }
+    }
+    
+    // TODO: some refactoring
+    for(var key in filteredData) {
+      if (hopUndefined || filteredData.hasOwnProperty(key)) {
         var input = document.createElement('input');
         input.type = "hidden";
         input.name = key;
-        input.value = data[key];
+        input.value = filteredData[key];
         form.appendChild(input);
       }
     }
