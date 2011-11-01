@@ -7,9 +7,22 @@
 
 <script>
 var indicator = document.getElementById("indicator");
+
+var o = {a: 1, b: 2}, // object
+		ao = [{a: 1, b: 2}, {a: 3, b: 4}], // array of objects
+		oao = { // object with array of objects as the most complex value
+			condition: "control",
+			completed: ["red","green","blue"],
+			data: [
+				{rt: 500, accuracy: 1, color: "red"},
+				{rt: 614, accuracy: 0, color: "green"},
+				{rt: 932, accuracy: 0, color: "blue"}
+			]
+		}; // object of array of objects
+
 if (!turk.previewMode) {
-	indicator.innerHTML = "submitting in 2 seconds...";
-	setTimeout(function() { turk.submit({a: 1, b: 2}) }, 2000);
+	indicator.innerHTML = "submitting in 1 second...";
+	setTimeout(function() { turk.submit(oao) }, 1000);
 } else {
 	indicator.innerHTML = "preview mode";
 }
