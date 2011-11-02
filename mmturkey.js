@@ -73,6 +73,7 @@ var turk = {};
 
     if (assignmentId) {
       rawData.assignmentId = assignmentId;
+      form.addData("assignmentId",assignmentId);
     }
 
     // Filter out non-own properties and things that are functions
