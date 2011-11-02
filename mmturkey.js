@@ -35,10 +35,14 @@ var turk = {};
       return "{<ul>" + strs.join("") + "</ul>}";
     } else if (typeof obj == "string")  {
       return '"' + obj + '"';
+    } else if (typeof obj == "undefined" ) {
+      return "[undefined]"
     } else {
       return obj.toString();
     }
   };
+  
+  turk.htmlify = htmlify;
   
   HTMLFormElement.prototype.addData = function(key,value) {
     var input = document.createElement('input');
