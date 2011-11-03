@@ -7,10 +7,38 @@ p=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u20
 {"":a})};if(typeof JSON.parse!=="function")JSON.parse=function(a,e){function c(a,d){var g,f,b=a[d];if(b&&typeof b==="object")for(g in b)Object.prototype.hasOwnProperty.call(b,g)&&(f=c(b,g),f!==void 0?b[g]=f:delete b[g]);return e.call(a,d,b)}var d,a=String(a);q.lastIndex=0;q.test(a)&&(a=a.replace(q,function(a){return"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)}));if(/^[\],:{}\s]*$/.test(a.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,"@").replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
 "]").replace(/(?:^|:|,)(?:\s*\[)+/g,"")))return d=eval("("+a+")"),typeof e==="function"?c({"":d},""):d;throw new SyntaxError("JSON.parse");}})();
 
-var turk = {};
+var turk;
+turk = turk || {};
 
 (function() {
-  var hopUndefined = !Object.prototype.hasOwnProperty;
+  if (!Array.prototype.map) {
+    Array.prototype.map = function(fun /*, thisp*/) {
+      var len = this.length >>> 0;
+      if (typeof fun != "function") { throw new TypeError(); }
+
+      var res = new Array(len);
+      var thisp = arguments[1];
+      for (var i = 0; i < len; i++) {
+        if (i in this)
+          res[i] = fun.call(thisp, this[i], i, this);
+   		}
+      return res;
+    };
+  }
+  
+  var hopUndefined = !Object.prototype.hasOwnProperty,
+      showPreviewWarning = true;
+  
+  // We can disable the previewWarning by including this script with "nowarn" in the script url
+  // (i.e. mmturkey.js?nowarn). This doesn't work in FF 1.5, which doesn't define document.scripts
+  if (document.scripts) {
+    for(var i=0, ii = document.scripts.length, src = document.scripts[i].src; i < ii; i++ ) {
+      if ( /mmturkey/.test(src) && /\?nowarn/.test(src) ) {
+        showPreviewWarning = false;
+        break;
+      }
+    }
+  }
   
   var param = function(url, name ) {
     name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
@@ -42,19 +70,18 @@ var turk = {};
     }
   };
   
-  turk.htmlify = htmlify;
-  
-  HTMLFormElement.prototype.addData = function(key,value) {
+  var addFormData = function(form,key,value) {
     var input = document.createElement('input');
     input.type = 'hidden';
     input.name = key;
     input.value = value;
-    this.appendChild(input);
+    form.appendChild(input);
   }
 
-  var src = param(window.location.href, "assignmentId") ? window.location.href : document.referrer;
-
-  var keys = ["assignmentId","hitId","workerId","turkSubmitTo"];
+  var url = window.location.href,
+      src = param(url, "assignmentId") ? url : document.referrer,
+      keys = ["assignmentId","hitId","workerId","turkSubmitTo"];
+  
   keys.map(function(key) {
     turk[key] = unescape(param(src, key));
   });
@@ -73,14 +100,14 @@ var turk = {};
 
     if (assignmentId) {
       rawData.assignmentId = assignmentId;
-      form.addData("assignmentId",assignmentId);
+      addFormData(form,"assignmentId",assignmentId);
     }
 
     // Filter out non-own properties and things that are functions
     for(var key in object) {
       if ((hopUndefined || object.hasOwnProperty(key)) && (typeof object[key] != "function") ) {
         rawData[key] = object[key];
-        form.addData(key, JSON.stringify(object[key]));
+        addFormData(form, key, JSON.stringify(object[key]));
       }
     }
 
@@ -103,4 +130,38 @@ var turk = {};
     form.method = "POST";
     form.submit();
   }
+  
+  // simulate $(document).ready() to show the preview warning
+  if (showPreviewWarning && turk.previewMode) {
+    var intervalHandle = setInterval(function() {
+      try {
+        var div = document.createElement('div'), style = div.style;
+        style.backgroundColor = "gray";
+        style.color = "white";
+        
+        style.position = "absolute";
+        style.margin = "0";
+        style.padding = "0";
+        style.paddingTop = "15px";
+        style.paddingBottom = "15px";
+        style.top = "0";
+        style.width = "98%";
+        style.textAlign = "center";
+        style.fontFamily = "arial";
+        style.fontSize = "24px";
+        style.fontWeight = "bold";
+        
+        style.opacity = "0.5";
+        style.filter = "alpha(opacity = 50)";
+        
+        div.innerHTML = "PREVIEW MODE: CLICK \"ACCEPT\" ABOVE TO START THIS HIT";
+        
+        document.body.appendChild(div);
+        clearInterval(intervalHandle);
+      } catch(e) {
+        
+      }
+    },20);
+  }
+  
 })();
