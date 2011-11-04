@@ -32,7 +32,8 @@ turk = turk || {};
   // We can disable the previewWarning by including this script with "nowarn" in the script url
   // (i.e. mmturkey.js?nowarn). This doesn't work in FF 1.5, which doesn't define document.scripts
   if (document.scripts) {
-    for(var i=0, ii = document.scripts.length, src = document.scripts[i].src; i < ii; i++ ) {
+    for(var i=0, ii = document.scripts.length; i < ii; i++ ) {
+      var src = document.scripts[i].src;
       if ( /mmturkey/.test(src) && /\?nowarn/.test(src) ) {
         showPreviewWarning = false;
         break;
