@@ -25,6 +25,7 @@ turk = turk || {};
       return res;
     };
   }
+
   
   var hopUndefined = !Object.prototype.hasOwnProperty,
       showPreviewWarning = true;
@@ -49,8 +50,82 @@ turk = turk || {};
     return ( results == null ) ? "" : results[1];
   }
   
+  function getKeys(obj) {
+    var a = [];
+    for(var key in obj) {
+      if ((hopUndefined || obj.hasOwnProperty(key)) && (typeof obj[key] != "function") ) {
+        a.push(key);
+      }
+    }
+    return a;
+  }
+  
+  // warning: Object.keys() is no good in older browsers
+  function isTable(array,equality) {
+  	if (!(array instanceof Array)) {
+  		return false;
+  	}
+  	
+  	// if the array contains a non-Object, bail
+  	if (array.reduce(function(acc,x) { return !(x instanceof Object) || acc },false)) {
+  	  return false;
+  	}
+
+  	if (equality == "loose") {
+  		return array.reduce(function(a,x) {
+  			return a && typeof x == "object"
+  		},true);
+  	}
+  	
+    var arraysEqual = function(a,b) {
+    	var i = a.length;
+    	if (b.length != i) {
+    		return false;
+    	}
+    	while(i--) {
+    		if (a[i] != b[i]) {
+    			return false;
+    		}
+    	}
+    	return true;	
+    }    
+
+  	var keys = getKeys(array[0]);
+
+  	return array.reduce(function(a,x) {
+  		return a && arraysEqual(keys,getKeys(x));
+  	},true);
+  }
+  
+  var htmlifyTable = function(array) {
+    var getRow = function(obj) {
+      var str = "";
+      str += "<tr>";
+      str += keys.map(function(k) { return "<td>" + obj[k] + "</td>" }).join("\n");
+      str += "</tr>";
+      return str;
+    }
+    
+    var keys = getKeys(array[0]);
+    
+    var str = "";
+    str += "<span title='tabular representation of array of objects with the same set of keys'>";
+    str += "<table border='1' style='border-collapse: collapse' cellpadding='3'>"
+    str += "<tr>";
+      str += keys.map(function(k) { return "<th>" + k + "</th>" }).join("\n");
+    str += "</tr>";
+    str += array.map(getRow).join("\n");
+    str += "</table></span>";
+    
+    return str;
+  }
+  
   // Give an HTML representation of an object
   var htmlify = function(obj) {
+    // Disabled for now, as this doesn't work for tables embedded within tables
+    /*if (isTable(obj)) {
+      return htmlifyTable(obj);
+    } else */
     if (obj instanceof Array) {
       return "[" + obj.map(function(o) { return htmlify(o) } ).join(",") + "]";
     } else if (typeof obj == "object") {
@@ -89,39 +164,53 @@ turk = turk || {};
 
   turk.previewMode = (turk.assignmentId == "ASSIGNMENT_ID_NOT_AVAILABLE");
 
-  // TODO: what do you do if data is an array, rather than an object?
   // Submit a POST request to Turk
-  turk.submit = function(object) {
+  turk.submit = function(object, unwrap) {
+    var keys = getKeys(object);
+    
+    if (typeof object == "undefined" || keys.length == 0) {
+      alert("mmturkey: you need to pass an object (i.e., actual data) to turk.submit() ");
+      return;
+    }
+    
+    unwrap = !!unwrap;
+    
     var assignmentId = turk.assignmentId,
         turkSubmitTo = turk.turkSubmitTo,
         rawData = {},
         form = document.createElement('form');
    
     document.body.appendChild(form);
-
+    
     if (assignmentId) {
       rawData.assignmentId = assignmentId;
       addFormData(form,"assignmentId",assignmentId);
     }
-
-    // Filter out non-own properties and things that are functions
-    for(var key in object) {
-      if ((hopUndefined || object.hasOwnProperty(key)) && (typeof object[key] != "function") ) {
+    
+    if (unwrap) {
+      // Filter out non-own properties and things that are functions
+      keys.map(function(key) {
         rawData[key] = object[key];
         addFormData(form, key, JSON.stringify(object[key]));
-      }
+      });
+      
+    } else {
+      rawData["data"] = object;
+      addFormData(form, "data", JSON.stringify(object));
     }
 
     // If there's no turk info
     if (!assignmentId || !turkSubmitTo) {
       // Emit the debug output and stop
-      var div = document.createElement('div');
-      div.style.fontFamily = '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", sans-serif';
-      div.style.fontSize = "14px";
-      div.style.cssFloat = "right";
-      div.style.padding = "1em";
-      div.style.backgroundColor = "#dfdfdf";
-      div.innerHTML = "<p><b>Debug mode</b></p>Here is the data that would have been submitted to Turk: <ul>" + htmlify(rawData) + "</ul>"
+      var div = document.createElement('div'),
+          style = div.style;
+      style.fontFamily = '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", sans-serif';
+      style.fontSize = "14px";
+      style.cssFloat = "right";
+      style.padding = "1em";
+      style.backgroundColor = "#dfdfdf";
+      div.innerHTML = "<p><b>Debug mode</b></p>Here is the data that would have been submitted to Turk: <ul>" + htmlify(rawData) + "</ul>";
+      div.className = "mmturkey-debug";
       document.body.appendChild(div);
       return;
     }
@@ -136,7 +225,8 @@ turk = turk || {};
   if (showPreviewWarning && turk.previewMode) {
     var intervalHandle = setInterval(function() {
       try {
-        var div = document.createElement('div'), style = div.style;
+        var div = document.createElement('div'),
+            style = div.style;
         style.backgroundColor = "gray";
         style.color = "white";
         
