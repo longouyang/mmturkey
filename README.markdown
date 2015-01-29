@@ -9,7 +9,7 @@ It creates a global JavaScript object, `turk`, that has these five properties:
 * `turkSubmitTo`: the Mechanical Turk submission server (either production or sandbox).
 
 
-These variables get read from `window.location.href`. If they aren't in `window.location.href`, the scrip script also tries `document.referer`, so you can conceivably split a task across two different pages. The script provides a single method, `submit(object, [unwrap])`, which takes one required argument, `object`, and an optional argument, `unwrap`.
+These variables get read from `window.location.href`. If they aren't in `window.location.href`, the script also tries `document.referer`, so you can conceivably split a task across two different pages. The script provides a single method, `submit(object, [unwrap])`, which takes one required argument, `object`, and an optional argument, `unwrap`.
 
 `object` is an object containing keys and values. mmturkey will submit this object (potentially "unwrapped" - see below) via a POST request to the proper externalSubmit URL. If `object` is empty or not supplied, mmturkey responds with an error.
 
