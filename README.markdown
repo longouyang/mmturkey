@@ -1,4 +1,4 @@
-A tiny library for submitting external HITs on Mechanical Turk.
+A tiny library for sending data from external webpages to Amazon's Mechanical Turk.
 
 It creates a global JavaScript object, `turk`, that has these five properties:
 
@@ -15,7 +15,7 @@ These variables get read from `window.location.href`. If they aren't in `window.
 
 `unwrap`: Best illustrated with an example. Suppose that `object` is this:
 
-```
+```js
 {
   id: 30,
   cond: 2,
@@ -26,7 +26,7 @@ These variables get read from `window.location.href`. If they aren't in `window.
 
 By default, `unwrap=false`, which means that this will get submitted to Turk:
 
-```
+```js
 {
   data: "{'id':30,'cond':2,'demo':{'age':30,'gender':'male'},'trials':[{'rt':100,'key':2},{'rt':250,'key':1}]}"
 }
@@ -34,7 +34,7 @@ By default, `unwrap=false`, which means that this will get submitted to Turk:
 
 Note that what gets submitted to Turk has only a single key, `data`, whose value is the JSON stringified version of `object`. When `unwrap=true`, the data submitted to Turk looks like this:
 
-```
+```js
 {
   id: 30,
   cond: 2,
