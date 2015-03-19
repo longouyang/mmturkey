@@ -25,8 +25,8 @@ turk = turk || {};
   // (i.e. mmturkey.js?nowarn). This doesn't work in FF 1.5, which doesn't define document.scripts
   if (document.scripts) {
     for(var i=0, ii = document.scripts.length; i < ii; i++ ) {
-      var src = document.scripts[i].src;
-      if ( /mmturkey/.test(src) && /\?nowarn/.test(src) ) {
+      var scriptSrc = document.scripts[i].src;
+      if ( /mmturkey/.test(scriptSrc) && /\?nowarn/.test(scriptSrc) ) {
         showPreviewWarning = false;
         break;
       }
