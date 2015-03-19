@@ -232,9 +232,10 @@ turk = turk || {};
         style.fontFamily = "arial";
         style.fontSize = "24px";
         style.fontWeight = "bold";
+        style["text-shadow"] = "1px 2px black";
         
-        style.opacity = "0.5";
-        style.filter = "alpha(opacity = 50)";
+        style.opacity = "0.7";
+        style.filter = "alpha(opacity = 70)";
         
         div.innerHTML = "PREVIEW MODE: CLICK \"ACCEPT\" ABOVE TO START THIS HIT";
         
