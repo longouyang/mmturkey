@@ -17,6 +17,26 @@ turk = turk || {};
     };
   }
 
+  // micro edsl for generating html
+  // takes as arguments either:
+  // - a single array of strings
+  // - an arbitrary number of strings
+  var lines = function() {
+    if (arguments.length == 1 && arguments[0] instanceof Array) {
+      return arguments[0].join("\n")
+    } else {
+      var args = Array.prototype.slice.call(arguments);
+      return args.join("\n");
+    }
+  }
+
+  // micro edsl for generating html
+  // tag("a href='foo'", "inner") returns <a href='foo'>inner</a>
+  // tag("a href='foo'", "inner","peace") returns <a href='foo'>inner\npeace</a>
+  var tag = function(name, content /*, ... */) {
+    var contents = Array.prototype.slice.call(arguments, 1);
+    return "<" + name + ">" + lines(contents) + "</" + name.split(/ +/)[0] + ">";
+  }
   
   var hopUndefined = !Object.prototype.hasOwnProperty,
       showPreviewWarning = true;
@@ -90,46 +110,39 @@ turk = turk || {};
   
   var htmlifyTable = function(array) {
     var getRow = function(obj) {
-      var str = "";
-      str += "<tr>";
-      str += keys.map(function(k) { return "<td>" + obj[k] + "</td>" }).join("\n");
-      str += "</tr>";
-      return str;
+      return tag("tr",
+                 lines(keys.map(function(k) { return tag("td", htmlify(obj[k])) })))
     }
     
     var keys = getKeys(array[0]);
     
-    var str = "";
-    str += "<span title='tabular representation of array of objects with the same set of keys'>";
-    str += "<table border='1' style='border-collapse: collapse' cellpadding='3'>"
-    str += "<tr>";
-      str += keys.map(function(k) { return "<th>" + k + "</th>" }).join("\n");
-    str += "</tr>";
-    str += array.map(getRow).join("\n");
-    str += "</table></span>";
-    
-    return str;
+    return tag("table class=tabular valign=top border=1",
+               // row for table headers
+               tag("tr", lines(keys.map(function(k) { return tag("th", k) }))),
+               // all the content rows
+               lines(array.map(getRow)))
+  
   }
   
   // Give an HTML representation of an object
   var htmlify = function(obj) {
-    // Disabled for now, as this doesn't work for tables embedded within tables
-    /*if (isTable(obj)) {
+    if (isTable(obj)) {
       return htmlifyTable(obj);
-    } else */
+    } else
     if (obj instanceof Array) {
       return "[" + obj.map(function(o) { return htmlify(o) } ).join(",") + "]";
     } else if (typeof obj == "object") {
       var strs = [];
       for(var key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          var str = "<li>" + htmlify(key) + ": " + htmlify(obj[key]) + "</li>";
-          strs.push(str);
+        if (obj.hasOwnProperty(key) && typeof obj[key] !== "function") {
+          strs.push(tag("tr",
+                       tag("td class='key' valign='top'", htmlify(key)),
+                       tag("td valign='top'", htmlify(obj[key]))))
         }
       }
-      return "{<ul>" + strs.join("") + "</ul>}";
+      return tag("table valign=top border=1", strs.join(""))
     } else if (typeof obj == "string")  {
-      return '"' + obj + '"';
+      return obj;
     } else if (typeof obj == "undefined" ) {
       return "[undefined]"
     } else {
@@ -192,17 +205,32 @@ turk = turk || {};
 
     // If there's no turk info
     if (!assignmentId || !turkSubmitTo) {
+      var popup = window.open();
+
       // Emit the debug output and stop
       var div = document.createElement('div'),
           style = div.style;
-      style.fontFamily = '"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", sans-serif';
-      style.fontSize = "14px";
-      style.cssFloat = "right";
-      style.padding = "1em";
-      style.backgroundColor = "#dfdfdf";
-      div.innerHTML = "<p><b>Debug mode</b></p>Here is the data that would have been submitted to Turk: <ul>" + htmlify(rawData) + "</ul>";
-      div.className = "mmturkey-debug";
-      document.body.appendChild(div);
+      
+      div.innerHTML = lines(
+        tag("h2","<code>turk.submit</code> testing mode"), 
+        tag("p", "Here is the data that would have been submitted to Turk:"),
+        tag("div style='width: 700px'", htmlify(rawData))
+      );
+
+      popup.document.body.appendChild(div);
+      popup.document.head.innerHTML = lines(
+        tag("title", "mmturkey data"),
+        tag("style",
+            lines(
+              "body { font-family: 'Helvetica'; font-size: 12px}",
+              "table { border: 1px solid gray; border-collapse: collapse; box-shadow: 2px 2px 1px #aaa; }",
+              ".tabular { margin: 0 0.5em 0.5em 0 } ",
+              ".tabular td { background-color: #e0e0e0; font-size: 10px; }",
+              "th, td { font-family: 'Courier New'; padding: 0.55em; font-size: 12px}",
+              "th { background-color: #6699cc }",
+              "td.key { font-weight: bold; background-color: tan }"
+            )));
+
       return;
     }
 
