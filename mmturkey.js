@@ -161,7 +161,7 @@ turk = turk || {};
   var url = window.location.href,
       src = param(url, "assignmentId") ? url : document.referrer,
       keys = ["assignmentId","hitId","workerId","turkSubmitTo"];
-  
+
   keys.map(function(key) {
     turk[key] = unescape(param(src, key));
   });
@@ -169,16 +169,16 @@ turk = turk || {};
   turk.previewMode = (turk.assignmentId == "ASSIGNMENT_ID_NOT_AVAILABLE");
 
   // Submit a POST request to Turk
-  turk.submit = function(object, unwrap) {
-    var keys = getKeys(object);
-    
-    if (typeof object == "undefined" || keys.length == 0) {
-      alert("mmturkey: you need to pass an object (i.e., actual data) to turk.submit() ");
+  turk.submit = function(data, unwrap) {
+    var keys = getKeys(data);
+
+    if (typeof data == "undefined" || keys.length == 0) {
+      alert("mmturkey: you need to pass a non-empty object to turk.submit()");
       return;
     }
-    
+
     unwrap = !!unwrap;
-    
+
     var assignmentId = turk.assignmentId,
         turkSubmitTo = turk.turkSubmitTo,
         rawData = {},
@@ -194,13 +194,13 @@ turk = turk || {};
     if (unwrap) {
       // Filter out non-own properties and things that are functions
       keys.map(function(key) {
-        rawData[key] = object[key];
-        addFormData(form, key, JSON.stringify(object[key]));
+        rawData[key] = data[key];
+        addFormData(form, key, JSON.stringify(data[key]));
       });
-      
+
     } else {
-      rawData["data"] = object;
-      addFormData(form, "data", JSON.stringify(object));
+      rawData["data"] = data;
+      addFormData(form, "data", JSON.stringify(data));
     }
 
     // If there's no turk info
