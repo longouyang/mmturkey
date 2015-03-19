@@ -37,10 +37,10 @@ turk = turk || {};
     var contents = Array.prototype.slice.call(arguments, 1);
     return "<" + name + ">" + lines(contents) + "</" + name.split(/ +/)[0] + ">";
   }
-  
+
   var hopUndefined = !Object.prototype.hasOwnProperty,
       showPreviewWarning = true;
-  
+
   // We can disable the previewWarning by including this script with "nowarn" in the script url
   // (i.e. mmturkey.js?nowarn). This doesn't work in FF 1.5, which doesn't define document.scripts
   if (document.scripts) {
@@ -52,7 +52,7 @@ turk = turk || {};
       }
     }
   }
-  
+
   var param = function(url, name ) {
     name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
     var regexS = "[\\?&]"+name+"=([^&#]*)";
@@ -60,7 +60,7 @@ turk = turk || {};
     var results = regex.exec( url );
     return ( results == null ) ? "" : results[1];
   }
-  
+
   function getKeys(obj) {
     var a = [];
     for(var key in obj) {
@@ -70,13 +70,13 @@ turk = turk || {};
     }
     return a;
   }
-  
+
   // warning: Object.keys() is no good in older browsers
   function isTable(array,equality) {
   	if (!(array instanceof Array)) {
   		return false;
   	}
-  	
+
   	// if the array contains a non-Object, bail
   	if (array.reduce(function(acc,x) { return !(x instanceof Object) || acc },false)) {
   	  return false;
@@ -87,7 +87,7 @@ turk = turk || {};
   			return a && typeof x == "object"
   		},true);
   	}
-  	
+
     var arraysEqual = function(a,b) {
     	var i = a.length;
     	if (b.length != i) {
@@ -98,8 +98,8 @@ turk = turk || {};
     			return false;
     		}
     	}
-    	return true;	
-    }    
+    	return true;
+    }
 
   	var keys = getKeys(array[0]);
 
@@ -107,23 +107,23 @@ turk = turk || {};
   		return a && arraysEqual(keys,getKeys(x));
   	},true);
   }
-  
+
   var htmlifyTable = function(array) {
     var getRow = function(obj) {
       return tag("tr",
                  lines(keys.map(function(k) { return tag("td", htmlify(obj[k])) })))
     }
-    
+
     var keys = getKeys(array[0]);
-    
+
     return tag("table class=tabular valign=top border=1",
                // row for table headers
                tag("tr", lines(keys.map(function(k) { return tag("th", k) }))),
                // all the content rows
                lines(array.map(getRow)))
-  
+
   }
-  
+
   // Give an HTML representation of an object
   var htmlify = function(obj) {
     if (isTable(obj)) {
@@ -149,7 +149,7 @@ turk = turk || {};
       return obj.toString();
     }
   };
-  
+
   var addFormData = function(form,key,value) {
     var input = document.createElement('input');
     input.type = 'hidden';
@@ -183,14 +183,14 @@ turk = turk || {};
         turkSubmitTo = turk.turkSubmitTo,
         rawData = {},
         form = document.createElement('form');
-   
+
     document.body.appendChild(form);
-    
+
     if (assignmentId) {
       rawData.assignmentId = assignmentId;
       addFormData(form,"assignmentId",assignmentId);
     }
-    
+
     if (unwrap) {
       // Filter out non-own properties and things that are functions
       keys.map(function(key) {
@@ -210,9 +210,9 @@ turk = turk || {};
       // Emit the debug output and stop
       var div = document.createElement('div'),
           style = div.style;
-      
+
       div.innerHTML = lines(
-        tag("h2","<code>turk.submit</code> testing mode"), 
+        tag("h2","<code>turk.submit</code> testing mode"),
         tag("p", "Here is the data that would have been submitted to Turk:"),
         tag("div style='width: 700px'", htmlify(rawData))
       );
@@ -239,7 +239,7 @@ turk = turk || {};
     form.method = "POST";
     form.submit();
   }
-  
+
   // simulate $(document).ready() to show the preview warning
   if (showPreviewWarning && turk.previewMode) {
     var intervalHandle = setInterval(function() {
@@ -248,7 +248,7 @@ turk = turk || {};
             style = div.style;
         style.backgroundColor = "gray";
         style.color = "white";
-        
+
         style.position = "absolute";
         style.margin = "0";
         style.padding = "0";
@@ -261,18 +261,18 @@ turk = turk || {};
         style.fontSize = "24px";
         style.fontWeight = "bold";
         style["text-shadow"] = "1px 2px black";
-        
+
         style.opacity = "0.7";
         style.filter = "alpha(opacity = 70)";
-        
+
         div.innerHTML = "PREVIEW MODE: CLICK \"ACCEPT\" ABOVE TO START THIS HIT";
-        
+
         document.body.appendChild(div);
         clearInterval(intervalHandle);
       } catch(e) {
-        
+
       }
     },20);
   }
-  
+
 })();
